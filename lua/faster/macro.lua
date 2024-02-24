@@ -1,0 +1,39 @@
+local utils = require('faster.utils')
+
+local M = {}
+
+local function execute_macro()
+  local reg = vim.fn.nr2char(vim.fn.getchar())
+
+  utils.run_on_features(
+    Config.behaviours.fastmacro.features_disabled,
+    function (f) f.disable() end
+  )
+
+  local count = vim.v.count or 1
+  if count < 1 then count = 1 end
+
+  vim.keymap.del('n', '@')
+
+  xpcall(
+    function()
+      vim.cmd('noautocmd normal! ' .. count .. '@' .. reg)
+    end,
+    function(e)
+      utils.print_error(e)
+    end
+  )
+
+  vim.keymap.set({ 'n' }, '@', execute_macro)
+
+  utils.run_on_features(
+    Config.behaviours.fastmacro.features_disabled,
+    function (f) f.enable() end
+  )
+end
+
+function M.init()
+  vim.keymap.set({ 'n' }, '@', execute_macro)
+end
+
+return M
