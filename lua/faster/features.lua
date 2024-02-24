@@ -35,7 +35,7 @@ M.matchparen = {
 
   commands = function()
     vim.api.nvim_create_user_command('FasterEnableMatchparen', M.matchparen.enable, {})
-    vim.api.nvim_create_user_command('FasterDisableMatchparen', M.matchparen.enable, {})
+    vim.api.nvim_create_user_command('FasterDisableMatchparen', M.matchparen.disable, {})
   end,
 
   enable = function()
