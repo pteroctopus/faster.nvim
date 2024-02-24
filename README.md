@@ -22,7 +22,7 @@ enabled and plugins installed its impact can be significant.
 
 Speed comparison was done with three neovim configs:
 
-- Left: Highly customized Neovim (a lot of plugins and options)
+- Left: [Highly customized Neovim](https://github.com/pteroctopus/neovim-config) (a lot of plugins and options)
 - Middle: Vanilla Neovim: `nvim -u NONE`
 - Right: Highly customized Neovim (a lot of plugins and options) but with
   faster.nvim plugin
