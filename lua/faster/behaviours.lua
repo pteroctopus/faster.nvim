@@ -9,13 +9,15 @@ M.bigfile = {
   },
   filesize = 2,
   pattern = "*",
-  init = require('faster.bigfile').init
+  init = require('faster.bigfile').init,
+  stop = require('faster.bigfile').stop,
 }
 
 M.fastmacro = {
   on = true,
   features_disabled = { "lualine", },
-  init = require('faster.macro').init
+  init = require('faster.macro').init,
+  stop = require('faster.macro').stop,
 }
 
 return M

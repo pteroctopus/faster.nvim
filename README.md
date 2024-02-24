@@ -31,7 +31,7 @@ Speed comparison was done with three neovim configs:
 computers and with different plugins. If your Neovim is slow even with
 faster.nvim that means that some other plugin or options is used that is not
 considered in faster.nvim. Resolution would be to find the offending plugin or
-option and configure a new feature that faster.nvim can use as explained bellow.
+option and configure a new feature that faster.nvim can use as explained below.
 
 Bigfile opening speed:
 
@@ -59,7 +59,7 @@ Call:
 require('faster').setup()
 ```
 
-Or if you use lazy.nvim use opts like bellow. Further Examples are going to
+Or if you use lazy.nvim use opts like below. Further Examples are going to
 assume lazy.nvim is being used.
 
 ## Minimal configuration
@@ -83,7 +83,7 @@ opts = {
       -- set to false
       on = true,
       -- Table which contains names of features that will be disabled when
-      -- bigfile is opened. Feature names can be seen in features table bellow.
+      -- bigfile is opened. Feature names can be seen in features table below.
       -- features_disabled can also be set to "all" and then all features that
       -- are on (on=true) are going to be disabled for this behaviour
       features_disabled = {
@@ -94,16 +94,16 @@ opts = {
       filesize = 2,
       -- Autocmd pattern that controls on which files behaviour will be applied.
       -- `*` means any file.
-      pattern = "*"
+      pattern = "*",
     },
     -- Fast macro configuration controls disabling and enabling features when
     -- macro is executed
     fastmacro = {
       -- Behaviour can be turned on or off. To turn on set to true, otherwise
       -- set to false
-      on = true
+      on = true,
       -- Table which contains names of features that will be disabled when
-      -- macro is executed. Feature names can be seen in features table bellow.
+      -- macro is executed. Feature names can be seen in features table below.
       -- features_disabled can also be set to "all" and then all features that
       -- are on (on=true) are going to be disabled for this behaviour
       features_disabled = { "lualine" },
@@ -118,55 +118,55 @@ opts = {
     -- Neovim filetype plugin
     -- https://neovim.io/doc/user/filetype.html
     filetype = {
-      on = true
+      on = true,
       defer = true,
     },
     -- Illuminate plugin
     -- https://github.com/RRethy/vim-illuminate
     illuminate = {
-      on = true
+      on = true,
       defer = false,
     },
     -- Indent Blankline
     -- https://github.com/lukas-reineke/indent-blankline.nvim
     indent_blankline = {
-      on = true
+      on = true,
       defer = false,
     },
     -- Neovim LSP
     -- https://neovim.io/doc/user/lsp.html
     lsp = {
-      on = true
+      on = true,
       defer = false,
     },
     -- Lualine
     -- https://github.com/nvim-lualine/lualine.nvim
     lualine = {
-      on = true
+      on = true,
       defer = false,
     },
     -- Neovim Pi_paren plugin
     -- https://neovim.io/doc/user/pi_paren.html
     matchparen = {
-      on = true
+      on = true,
       defer = false,
     },
     -- Neovim syntax
     -- https://neovim.io/doc/user/syntax.html
     syntax = {
-      on = true
+      on = true,
       defer = true,
     },
     -- Neovim treesitter
     -- https://neovim.io/doc/user/treesitter.html
     treesitter = {
-      on = true
+      on = true,
       defer = false,
     },
     -- Neovim options that affect speed when big file is opened:
     -- swapfile, foldmethod, undolevels, undoreload, list
     vimopts = {
-      on = true
+      on = true,
       defer = false,
     }
   }
@@ -190,7 +190,10 @@ test_behaviour = {
         "vimopts", "syntax", "filetype" },
   -- init key takes a function that initializes the behaviour, for example sets
   -- autocommands based on some rule
-  init = function() print('test_behaviour initialized') end
+  init = function() print('test_behaviour initialized') end,
+  -- stop key takes a function that stops the behaviour, for example deletes
+  -- autocommands and enable features if they were disabled by init
+  stop = function() print('test_behaviour stopped') end,
 },
 ```
 
@@ -238,30 +241,29 @@ set to `true` in the configuration.
 | FasterDisableBigfile         | Disables bigfile behaviour                                                                                       |
 | FasterDisableFastmacro       | Disables fastmacro behaviour                                                                                     |
 | FasterDisableFiletype        | Disables filetype for the current buffer                                                                         |
-| FasterDisableIlluminate      | Disables illuminate plugin globaly                                                                               |
-| FasterDisableIndentblankline | Disables indent blank line plugin globaly                                                                        |
+| FasterDisableIlluminate      | Disables illuminate plugin globally                                                                              |
+| FasterDisableIndentblankline | Disables indent blank line plugin globally                                                                       |
 | FasterDisableLsp             | Disables LSP client for currently opened buffers. Will not disable LSP for any new buffers opened.               |
-| FasterDisableLualine         | Disables lualine plugin globaly                                                                                  |
-| FasterDisableMatchparen      | Disables parentheses matching globaly, even for newly opened buffers                                             |
+| FasterDisableLualine         | Disables lualine plugin globally                                                                                 |
+| FasterDisableMatchparen      | Disables parentheses matching globally, even for newly opened buffers                                            |
 | FasterDisableSyntax          | Disabled default syntax highlighting for current buffer                                                          |
-| FasterDisableTreesitter      | Disables treesitter globaly even for newly opened buffers                                                        |
+| FasterDisableTreesitter      | Disables treesitter globally even for newly opened buffers                                                       |
 | FasterDisableVimopts         | Disable neovim options connected to slowness of Neovim when big files are opened but only for the current buffer |
 | FasterEnableAllFeatures      | Enables all defined features that are on                                                                         |
-| FasterEnableBigfile          | !Not implemented yet                                                                                             |
-| FasterEnableFastmacro        | !Not implemented yet                                                                                             |
+| FasterEnableBigfile          | Enables bigfile behaviour                                                                                        |
+| FasterEnableFastmacro        | Enables fastmacro behaviour                                                                                      |
 | FasterEnableFiletype         | Enables filetype for the current buffer                                                                          |
-| FasterEnableIlluminate       | Enables illuminate plugin globaly                                                                                |
-| FasterEnableIndentblankline  | Enables indent blank line plugin globaly                                                                         |
+| FasterEnableIlluminate       | Enables illuminate plugin globally                                                                               |
+| FasterEnableIndentblankline  | Enables indent blank line plugin globally                                                                        |
 | FasterEnableLsp              | Enables LSP client for currently opened buffers                                                                  |
-| FasterEnableLualine          | Enables lualine plugin globaly                                                                                   |
-| FasterEnableMatchparen       | Enables parentheses matching globaly                                                                             |
+| FasterEnableLualine          | Enables lualine plugin globally                                                                                  |
+| FasterEnableMatchparen       | Enables parentheses matching globally                                                                            |
 | FasterEnableSyntax           | Enables default syntax highlighting for current buffer                                                           |
-| FasterEnableTreesitter       | Enables treesitter globaly                                                                                       |
+| FasterEnableTreesitter       | Enables treesitter globally                                                                                      |
 | FasterEnableVimopts          | Enables neovim options connected to slowness of Neovim whn bif files are opened but only for the current buffer  |
 | FasterPrintConfig            | Prints faster.nvim configuration. Takes into account default configuration and user defined one and merges them. |
 
 # TODO
 
-- Implement deferring for macro execution
-- Videos with speed comparisons
-- Implement commands and function for enabling bigfile and fastmacro behaviours
+- Implement checking toggle status of the feature before enable/disabling it. If
+  something is disabled already it shouldn't be enabled after behaviour finishes

@@ -17,7 +17,7 @@ function M.enable_fast_macro()
 end
 
 function M.disable_fast_macro()
-  --TODO disableFastMacro
+  Config.behaviours.fastmacro.stop()
 end
 
 function M.enable_big_file()
@@ -25,7 +25,7 @@ function M.enable_big_file()
 end
 
 function M.disable_big_file()
-  --TODO disableBigFile
+  Config.behaviours.bigfile.stop()
 end
 
 -- FEATURES

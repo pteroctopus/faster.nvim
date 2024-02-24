@@ -34,6 +34,7 @@ function M.setup(opts)
     if b.on == nil then b.on = false end
     if b.features_disabled == nil then b.features_disabled = {} end
     if b.init == nil then b.init = function() end end
+    if b.stop == nil then b.stop = function() end end
 
     -- Init
     if b.on then

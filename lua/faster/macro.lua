@@ -7,7 +7,14 @@ local function execute_macro()
 
   utils.run_on_features(
     Config.behaviours.fastmacro.features_disabled,
-    function (f) f.disable() end
+    function(f) f.disable() end,
+    function(f) return f.defer == false end
+  )
+
+  utils.run_on_features(
+    Config.behaviours.fastmacro.features_disabled,
+    function(f) f.disable() end,
+    function(f) return f.defer == true end
   )
 
   local count = vim.v.count or 1
@@ -28,12 +35,36 @@ local function execute_macro()
 
   utils.run_on_features(
     Config.behaviours.fastmacro.features_disabled,
-    function (f) f.enable() end
+    function(f) f.enable() end,
+    function(f) return f.defer == true end
   )
+
+  utils.run_on_features(
+    Config.behaviours.fastmacro.features_disabled,
+    function(f) f.enable() end,
+    function(f) return f.defer == false end
+  )
+
 end
 
 function M.init()
   vim.keymap.set({ 'n' }, '@', execute_macro)
+end
+
+function M.stop()
+  vim.keymap.del('n', '@')
+
+  utils.run_on_features(
+    Config.behaviours.fastmacro.features_disabled,
+    function(f) f.enable() end,
+    function(f) return f.defer == true end
+  )
+
+  utils.run_on_features(
+    Config.behaviours.fastmacro.features_disabled,
+    function(f) f.enable() end,
+    function(f) return f.defer == false end
+  )
 end
 
 return M

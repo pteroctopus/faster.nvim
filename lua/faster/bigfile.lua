@@ -23,10 +23,18 @@ local function disable_features(bufnr, defer)
   end
 end
 
+local function enable_features(defer)
+  utils.run_on_features(
+    Config.behaviours.bigfile.features_disabled,
+    function(f) f.enable() end,
+    function(f) return f.defer == defer end
+  )
+end
+
 local M = {}
 
 function M.init()
-  local augroup = vim.api.nvim_create_augroup("faster_bigfile", {})
+  local augroup = vim.api.nvim_create_augroup('faster_bigfile', {})
 
   vim.api.nvim_create_autocmd("BufReadPre", {
     pattern = Config.behaviours.bigfile.pattern,
@@ -51,6 +59,12 @@ function M.init()
       Config.behaviours.bigfile.filesize
     ),
   })
+end
+
+function M.stop()
+  vim.api.nvim_del_augroup_by_name('faster_bigfile')
+  enable_features(true)
+  enable_features(false)
 end
 
 return M
