@@ -47,7 +47,8 @@ https://github.com/pteroctopus/faster.nvim/assets/138196695/99e5e890-6001-4d3f-b
 
 ```lua
 return {
-    'pteroctopus/faster.nvim'
+    'pteroctopus/faster.nvim',
+    opts = {},
 }
 ```
 
@@ -66,7 +67,8 @@ assume lazy.nvim is being used.
 
 ```lua
 return {
-    'github.com/pteroctopus/faster.nvim'
+    'github.com/pteroctopus/faster.nvim',
+    opts = {},
 }
 ```
 
