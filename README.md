@@ -66,7 +66,7 @@ assume lazy.nvim is being used.
 
 ```lua
 return {
-    'github.com/pteroctopus/faster.nvim'
+    'pteroctopus/faster.nvim'
 }
 ```
 
