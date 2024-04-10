@@ -44,6 +44,7 @@ function M.setup(opts)
 
   -- Initialize commands
   require('faster.commands')
+  vim.g.loaded_faster_nvim = 1
 end
 
 M.config = M.setup
