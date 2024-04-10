@@ -266,8 +266,3 @@ set to `true` in the configuration.
 | FasterEnableTreesitter       | Enables treesitter globally                                                                                      |
 | FasterEnableVimopts          | Enables neovim options connected to slowness of Neovim whn bif files are opened but only for the current buffer  |
 | FasterPrintConfig            | Prints faster.nvim configuration. Takes into account default configuration and user defined one and merges them. |
-
-# TODO
-
-- Implement checking toggle status of the feature before enable/disabling it. If
-  something is disabled already it shouldn't be enabled after behaviour finishes
