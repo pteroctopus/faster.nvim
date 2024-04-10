@@ -8,12 +8,12 @@ local function get_buf_size(bufnr)
   if not (ok and stats) then
     return
   end
-  return math.floor(0.5 + (stats.size / (1024 * 1024)))
+  return math.floor(0.5 + (stats.size / (1024 * 1024)) * 10) / 10
 end
 
-local function disable_features(bufnr, defer)
+local function disable_features(bufnr, for_size, defer)
   local filesize = get_buf_size(bufnr) or 0
-  local bigfile_detected = filesize >= Config.behaviours.bigfile.filesize
+  local bigfile_detected = filesize >= for_size
   if bigfile_detected then
     utils.run_on_features(
       Config.behaviours.bigfile.features_disabled,
@@ -40,7 +40,7 @@ function M.init()
     pattern = Config.behaviours.bigfile.pattern,
     group = augroup,
     callback = function(args)
-      disable_features(args.buf, false)
+      disable_features(args.buf, Config.behaviours.bigfile.filesize,false)
     end,
     desc = string.format(
       "[faster.nvim] Performance rule for handling files over %sMiB",
@@ -52,13 +52,43 @@ function M.init()
     pattern = Config.behaviours.bigfile.pattern,
     group = augroup,
     callback = function(args)
-      disable_features(args.buf, true)
+      disable_features(args.buf, Config.behaviours.bigfile.filesize, true)
     end,
     desc = string.format(
       "[faster.nvim] Performance rule for handling files over %sMiB",
       Config.behaviours.bigfile.filesize
     ),
   })
+
+  for _, override in ipairs(Config.behaviours.bigfile.extra_patterns or {}) do
+    if override.pattern ~= nil then
+      vim.api.nvim_create_autocmd("BufReadPre", {
+        pattern = override.pattern,
+        group = augroup,
+        callback = function(args)
+          disable_features(args.buf, override.filesize or Config.behaviours.bigfile.filesize,false)
+        end,
+        desc = string.format(
+          "[faster.nvim] Performance rule for handling `%s` files over %sMiB",
+          override.pattern,
+          override.filesize or Config.behaviours.bigfile.filesize
+        ),
+      })
+
+      vim.api.nvim_create_autocmd("BufReadPost", {
+        pattern = override.pattern,
+        group = augroup,
+        callback = function(args)
+          disable_features(args.buf, override.filesize or Config.behaviours.bigfile.filesize, true)
+        end,
+        desc = string.format(
+          "[faster.nvim] Performance rule for handling `%s` files over %sMiB",
+          override.pattern,
+          override.filesize or  Config.behaviours.bigfile.filesize
+        ),
+      })
+    end
+  end
 end
 
 function M.stop()

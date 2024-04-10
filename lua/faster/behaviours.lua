@@ -9,6 +9,7 @@ M.bigfile = {
   },
   filesize = 2,
   pattern = "*",
+  extra_patterns = {},
   init = require('faster.bigfile').init,
   stop = require('faster.bigfile').stop,
 }

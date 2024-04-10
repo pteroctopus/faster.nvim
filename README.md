@@ -95,6 +95,25 @@ opts = {
       -- Autocmd pattern that controls on which files behaviour will be applied.
       -- `*` means any file.
       pattern = "*",
+      -- Optional extra patterns and sizes for which bigfile behaviour will apply.
+      -- Note! that when multiple patterns (including the main one) and filesizes
+      -- are defined: bigfile behaviour will be applied for minimum filesize of
+      -- those defined in all applicable patterns for that file.
+      -- extra_pattern example in multi line comment is bellow:
+      --[[
+      extra_patterns = {
+        -- If this is used than bigfile behaviour for *.md files will be
+        -- triggered for filesize of 1.1MiB
+        { filesize = 1.1, pattern = "*.md" },
+        -- If this is used than bigfile behaviour for *.log file will be
+        -- triggered for the value in `behaviours.bigfile.filesize`
+        { pattern  = "*.log" },
+        -- Next line is invalid without the pattern and will be ignored
+        { filesize = 3 },
+      },
+      ]]
+      -- By default `extra_patterns` is an empty table: {}.
+      extra_patterns = {},
     },
     -- Fast macro configuration controls disabling and enabling features when
     -- macro is executed
