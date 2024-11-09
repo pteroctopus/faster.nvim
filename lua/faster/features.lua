@@ -13,17 +13,17 @@ M.illuminate = {
   end,
 
   enable = function()
-    if vim.fn.exists(':IlluminateResume') ~= 2 then
+    if vim.fn.exists(':IlluminateResumeBuf') ~= 2 then
       return
     end
-    vim.cmd('IlluminateResume')
+    vim.cmd('IlluminateResumeBuf')
   end,
 
   disable = function()
-    if vim.fn.exists(':IlluminatePause') ~= 2 then
+    if vim.fn.exists(':IlluminatePauseBuf') ~= 2 then
       return
     end
-    vim.cmd('IlluminatePause')
+    vim.cmd('IlluminatePauseBuf')
   end,
 }
 
@@ -100,7 +100,7 @@ M.treesitter = {
       return
     end
 
-    if vim.fn.exists(':TSEnable') ~= 2 then
+    if vim.fn.exists(':TSBufEnable') ~= 2 then
       return
     end
 
@@ -108,7 +108,7 @@ M.treesitter = {
       -- Return treesitter module state from backup
       for _, mod_state in ipairs(treesitter_backup) do
         if mod_state.enable then
-          vim.cmd('TSEnable ' .. mod_state.mod_name)
+          vim.cmd('TSBufEnable ' .. mod_state.mod_name)
         end
       end
       treesitter_disabled = false
@@ -121,7 +121,7 @@ M.treesitter = {
       return
     end
 
-    if vim.fn.exists(':TSDisable') ~= 2 then
+    if vim.fn.exists(':TSBufDisable') ~= 2 then
       return
     end
 
@@ -135,7 +135,7 @@ M.treesitter = {
     end
 
     for _, mod_name in ipairs(ts_config.available_modules()) do
-      vim.cmd('TSDisable ' .. mod_name)
+      vim.cmd('TSBufDisable ' .. mod_name)
     end
   end
 
