@@ -264,24 +264,24 @@ set to `true` in the configuration.
 | FasterDisableBigfile         | Disables bigfile behaviour                                                                                       |
 | FasterDisableFastmacro       | Disables fastmacro behaviour                                                                                     |
 | FasterDisableFiletype        | Disables filetype for the current buffer                                                                         |
-| FasterDisableIlluminate      | Disables illuminate plugin globally                                                                              |
+| FasterDisableIlluminate      | Disables illuminate plugin for the current buffer                                                                |
 | FasterDisableIndentblankline | Disables indent blank line plugin globally                                                                       |
 | FasterDisableLsp             | Disables LSP client for currently opened buffers. Will not disable LSP for any new buffers opened.               |
 | FasterDisableLualine         | Disables lualine plugin globally                                                                                 |
 | FasterDisableMatchparen      | Disables parentheses matching globally, even for newly opened buffers                                            |
 | FasterDisableSyntax          | Disabled default syntax highlighting for current buffer                                                          |
-| FasterDisableTreesitter      | Disables treesitter globally even for newly opened buffers                                                       |
+| FasterDisableTreesitter      | Disables treesitter for the current buffer                                                                       |
 | FasterDisableVimopts         | Disable neovim options connected to slowness of Neovim when big files are opened but only for the current buffer |
 | FasterEnableAllFeatures      | Enables all defined features that are on                                                                         |
 | FasterEnableBigfile          | Enables bigfile behaviour                                                                                        |
 | FasterEnableFastmacro        | Enables fastmacro behaviour                                                                                      |
 | FasterEnableFiletype         | Enables filetype for the current buffer                                                                          |
-| FasterEnableIlluminate       | Enables illuminate plugin globally                                                                               |
+| FasterEnableIlluminate       | Enables illuminate for the current buffer                                                                        |
 | FasterEnableIndentblankline  | Enables indent blank line plugin globally                                                                        |
 | FasterEnableLsp              | Enables LSP client for currently opened buffers                                                                  |
 | FasterEnableLualine          | Enables lualine plugin globally                                                                                  |
 | FasterEnableMatchparen       | Enables parentheses matching globally                                                                            |
 | FasterEnableSyntax           | Enables default syntax highlighting for current buffer                                                           |
-| FasterEnableTreesitter       | Enables treesitter globally                                                                                      |
+| FasterEnableTreesitter       | Enables treesitter for the current buffer                                                                        |
 | FasterEnableVimopts          | Enables neovim options connected to slowness of Neovim whn bif files are opened but only for the current buffer  |
 | FasterPrintConfig            | Prints faster.nvim configuration. Takes into account default configuration and user defined one and merges them. |
