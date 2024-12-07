@@ -16,7 +16,7 @@ local function disable_features(bufnr, for_size, defer)
   local bigfile_detected = filesize >= for_size
   if bigfile_detected then
     utils.run_on_features(
-      Config.behaviours.bigfile.features_disabled,
+      FasterConfig.behaviours.bigfile.features_disabled,
       function(f) f.disable() end,
       function(f) return f.defer == defer end
     )
@@ -25,7 +25,7 @@ end
 
 local function enable_features(defer)
   utils.run_on_features(
-    Config.behaviours.bigfile.features_disabled,
+    FasterConfig.behaviours.bigfile.features_disabled,
     function(f) f.enable() end,
     function(f) return f.defer == defer end
   )
@@ -37,41 +37,41 @@ function M.init()
   local augroup = vim.api.nvim_create_augroup('faster_bigfile', {})
 
   vim.api.nvim_create_autocmd("BufReadPre", {
-    pattern = Config.behaviours.bigfile.pattern,
+    pattern = FasterConfig.behaviours.bigfile.pattern,
     group = augroup,
     callback = function(args)
-      disable_features(args.buf, Config.behaviours.bigfile.filesize,false)
+      disable_features(args.buf, FasterConfig.behaviours.bigfile.filesize,false)
     end,
     desc = string.format(
       "[faster.nvim] Performance rule for handling files over %sMiB",
-      Config.behaviours.bigfile.filesize
+      FasterConfig.behaviours.bigfile.filesize
     ),
   })
 
   vim.api.nvim_create_autocmd("BufReadPost", {
-    pattern = Config.behaviours.bigfile.pattern,
+    pattern = FasterConfig.behaviours.bigfile.pattern,
     group = augroup,
     callback = function(args)
-      disable_features(args.buf, Config.behaviours.bigfile.filesize, true)
+      disable_features(args.buf, FasterConfig.behaviours.bigfile.filesize, true)
     end,
     desc = string.format(
       "[faster.nvim] Performance rule for handling files over %sMiB",
-      Config.behaviours.bigfile.filesize
+      FasterConfig.behaviours.bigfile.filesize
     ),
   })
 
-  for _, override in ipairs(Config.behaviours.bigfile.extra_patterns or {}) do
+  for _, override in ipairs(FasterConfig.behaviours.bigfile.extra_patterns or {}) do
     if override.pattern ~= nil then
       vim.api.nvim_create_autocmd("BufReadPre", {
         pattern = override.pattern,
         group = augroup,
         callback = function(args)
-          disable_features(args.buf, override.filesize or Config.behaviours.bigfile.filesize,false)
+          disable_features(args.buf, override.filesize or FasterConfig.behaviours.bigfile.filesize,false)
         end,
         desc = string.format(
           "[faster.nvim] Performance rule for handling `%s` files over %sMiB",
           override.pattern,
-          override.filesize or Config.behaviours.bigfile.filesize
+          override.filesize or FasterConfig.behaviours.bigfile.filesize
         ),
       })
 
@@ -79,12 +79,12 @@ function M.init()
         pattern = override.pattern,
         group = augroup,
         callback = function(args)
-          disable_features(args.buf, override.filesize or Config.behaviours.bigfile.filesize, true)
+          disable_features(args.buf, override.filesize or FasterConfig.behaviours.bigfile.filesize, true)
         end,
         desc = string.format(
           "[faster.nvim] Performance rule for handling `%s` files over %sMiB",
           override.pattern,
-          override.filesize or  Config.behaviours.bigfile.filesize
+          override.filesize or  FasterConfig.behaviours.bigfile.filesize
         ),
       })
     end

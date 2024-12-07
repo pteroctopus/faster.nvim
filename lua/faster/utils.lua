@@ -7,31 +7,31 @@ function M.print_error(e)
 end
 
 function M.print_config()
-  print(vim.inspect(Config))
+  print(vim.inspect(FasterConfig))
 end
 
 -- BEHAVIOURS
 
 function M.enable_fast_macro()
-  Config.behaviours.fastmacro.init()
+  FasterConfig.behaviours.fastmacro.init()
 end
 
 function M.disable_fast_macro()
-  Config.behaviours.fastmacro.stop()
+  FasterConfig.behaviours.fastmacro.stop()
 end
 
 function M.enable_big_file()
-  Config.behaviours.bigfile.init()
+  FasterConfig.behaviours.bigfile.init()
 end
 
 function M.disable_big_file()
-  Config.behaviours.bigfile.stop()
+  FasterConfig.behaviours.bigfile.stop()
 end
 
 -- FEATURES
 
 function M.enable_all_features()
-  for _, f in pairs(Config.features) do
+  for _, f in pairs(FasterConfig.features) do
     if f.on then
       f.enable()
     end
@@ -39,7 +39,7 @@ function M.enable_all_features()
 end
 
 function M.disable_all_features()
-  for _, f in pairs(Config.features) do
+  for _, f in pairs(FasterConfig.features) do
     if f.on then
       f.disable()
     end
@@ -52,10 +52,10 @@ function M.run_on_features(feature_names, func, cond_func)
   local features = {}
 
   if feature_names == 'all' then
-    features = Config.features
+    features = FasterConfig.features
   else
     for _, fname in ipairs(feature_names) do
-      local f = Config.features[fname]
+      local f = FasterConfig.features[fname]
       features[fname] = f
     end
   end

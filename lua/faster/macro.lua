@@ -6,13 +6,13 @@ local function execute_macro()
   local reg = vim.fn.nr2char(vim.fn.getchar())
 
   utils.run_on_features(
-    Config.behaviours.fastmacro.features_disabled,
+    FasterConfig.behaviours.fastmacro.features_disabled,
     function(f) f.disable() end,
     function(f) return f.defer == false end
   )
 
   utils.run_on_features(
-    Config.behaviours.fastmacro.features_disabled,
+    FasterConfig.behaviours.fastmacro.features_disabled,
     function(f) f.disable() end,
     function(f) return f.defer == true end
   )
@@ -34,13 +34,13 @@ local function execute_macro()
   vim.keymap.set({ 'n' }, '@', execute_macro)
 
   utils.run_on_features(
-    Config.behaviours.fastmacro.features_disabled,
+    FasterConfig.behaviours.fastmacro.features_disabled,
     function(f) f.enable() end,
     function(f) return f.defer == true end
   )
 
   utils.run_on_features(
-    Config.behaviours.fastmacro.features_disabled,
+    FasterConfig.behaviours.fastmacro.features_disabled,
     function(f) f.enable() end,
     function(f) return f.defer == false end
   )
@@ -55,13 +55,13 @@ function M.stop()
   vim.keymap.del('n', '@')
 
   utils.run_on_features(
-    Config.behaviours.fastmacro.features_disabled,
+    FasterConfig.behaviours.fastmacro.features_disabled,
     function(f) f.enable() end,
     function(f) return f.defer == true end
   )
 
   utils.run_on_features(
-    Config.behaviours.fastmacro.features_disabled,
+    FasterConfig.behaviours.fastmacro.features_disabled,
     function(f) f.enable() end,
     function(f) return f.defer == false end
   )
