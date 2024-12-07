@@ -8,13 +8,13 @@ local default_config = {
   behaviours = behaviours,
 }
 
-Config = {}
+FasterConfig = {}
 
 function M.setup(opts)
-  Config = vim.tbl_deep_extend("force", default_config, opts or {})
+  FasterConfig = vim.tbl_deep_extend("force", default_config, opts or {})
 
   -- Initialize features
-  for _, f in pairs(Config.features) do
+  for _, f in pairs(FasterConfig.features) do
     -- Set defaults if they don't exist
     if f.on == nil then f.on = false end
     if f.defer == nil then f.defer = false end
@@ -29,7 +29,7 @@ function M.setup(opts)
   end
 
   -- Initialize behaviours
-  for _, b in pairs(Config.behaviours) do
+  for _, b in pairs(FasterConfig.behaviours) do
     -- Set defaults if they don't exist
     if b.on == nil then b.on = false end
     if b.features_disabled == nil then b.features_disabled = {} end
