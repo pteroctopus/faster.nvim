@@ -191,6 +191,7 @@ M.vimopts = {
       vim.opt_local.undolevels = vimopts_backup.undolevels
       vim.opt_local.undoreload = vimopts_backup.undoreload
       vim.opt_local.list = vimopts_backup.list
+      vim.opt_local.spell = vimopts_backup.spell
       vimopts_disabled = false
     end
   end,
@@ -202,6 +203,7 @@ M.vimopts = {
       vimopts_backup.undolevels = vim.opt_local.undolevels
       vimopts_backup.undoreload = vim.opt_local.undoreload
       vimopts_backup.list = vim.opt_local.list
+      vimopts_backup.spell = vim.opt_local.spell
       vimopts_disabled = true
     end
 
@@ -210,6 +212,7 @@ M.vimopts = {
     vim.opt_local.undolevels = -1
     vim.opt_local.undoreload = 0
     vim.opt_local.list = false
+    vim.opt_local.spell = false
   end
 }
 
