@@ -16,7 +16,7 @@ M.bigfile = {
 
 M.fastmacro = {
   on = true,
-  features_disabled = { "lualine", },
+  features_disabled = { "lualine", "mini_clue"},
   init = require('faster.macro').init,
   stop = require('faster.macro').stop,
 }
