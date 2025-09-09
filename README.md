@@ -125,11 +125,13 @@ opts = {
       -- macro is executed. Feature names can be seen in features table below.
       -- features_disabled can also be set to "all" and then all features that
       -- are on (on=true) are going to be disabled for this behaviour.
-      -- Specificaly: lualine plugin is disabled when macros are executed because
+      -- Specificaly:
+      -- * lualine plugin is disabled when macros are executed because
       -- if a recursive macro opens a buffer on every iteration this error will
       -- happen after 300-400 hundred iterations:
       -- `E5108: Error executing lua Vim:E903: Process failed to start: too many open files: "/usr/bin/git"`
-      features_disabled = { "lualine" },
+      -- * mini.clue plugin is disabled when macros are executed because it breaks execution of some macros
+      features_disabled = { "lualine", "mini_clue" },
     }
   },
   -- Feature table contains configuration for features faster.nvim will disable
@@ -189,6 +191,12 @@ opts = {
     -- Neovim options that affect speed when big file is opened:
     -- swapfile, foldmethod, undolevels, undoreload, list
     vimopts = {
+      on = true,
+      defer = false,
+    },
+    -- Mini.clue
+    -- https://github.com/nvim-mini/mini.clue
+    mini_clue = {
       on = true,
       defer = false,
     }
@@ -268,6 +276,7 @@ set to `true` in the configuration.
 | FasterDisableIndentblankline | Disables indent blank line plugin globally                                                                       |
 | FasterDisableLsp             | Disables LSP client for currently opened buffers. Will not disable LSP for any new buffers opened.               |
 | FasterDisableLualine         | Disables lualine plugin globally                                                                                 |
+| FasterDisableMiniClue        | Disables mini.clue plugin triggers globally                                                                      |
 | FasterDisableMatchparen      | Disables parentheses matching globally, even for newly opened buffers                                            |
 | FasterDisableSyntax          | Disabled default syntax highlighting for current buffer                                                          |
 | FasterDisableTreesitter      | Disables treesitter for the current buffer                                                                       |
@@ -280,6 +289,7 @@ set to `true` in the configuration.
 | FasterEnableIndentblankline  | Enables indent blank line plugin globally                                                                        |
 | FasterEnableLsp              | Enables LSP client for currently opened buffers                                                                  |
 | FasterEnableLualine          | Enables lualine plugin globally                                                                                  |
+| FasterEnableMiniClue         | Enables mini.clue plugin triggers globally                                                                       |
 | FasterEnableMatchparen       | Enables parentheses matching globally                                                                            |
 | FasterEnableSyntax           | Enables default syntax highlighting for current buffer                                                           |
 | FasterEnableTreesitter       | Enables treesitter for the current buffer                                                                        |

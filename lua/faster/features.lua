@@ -303,4 +303,26 @@ M.lualine = {
   end
 }
 
+M.mini_clue = {
+  on = true,
+  defer = false,
+
+  commands = function()
+    vim.api.nvim_create_user_command('FasterEnableMiniClue', M.mini_clue.enable, {})
+    vim.api.nvim_create_user_command('FasterDisableMiniClue', M.mini_clue.disable, {})
+  end,
+
+  enable = function()
+    pcall(function()
+      MiniClue.enable_all_triggers()
+    end)
+  end,
+
+  disable = function()
+    pcall(function()
+      MiniClue.disable_all_triggers()
+    end)
+  end
+}
+
 return M
