@@ -6,9 +6,10 @@ Faster.nvim is a Neovim plugin inspired by
 bigfile.nvim concept and code for handling of big files has been used as a
 starting point for faster.nvim.
 
-Some Neovim plugins and features can make Neovim slow when editing big files and
-executing macros. Faster.nvim will selectively disable some features when big
-file is opened or macro is executed.
+Some Neovim plugins and features can make Neovim slow when editing big files,
+files with very long lines (minified JS/JSON/CSS), or while executing macros.
+Faster.nvim will selectively disable some features when a big file is opened,
+a long-line file is opened, or a macro is executed.
 
 Faster.nvim also gives ability to define custom behaviours and features so user
 can disable other plugins or Neovim options based on custom behaviour or the
@@ -114,6 +115,46 @@ opts = {
       ]]
       -- By default `extra_patterns` is an empty table: {}.
       extra_patterns = {},
+      -- When true, fires a one-shot `vim.notify` (INFO level, title
+      -- "faster.nvim") each time bigfile mode activates for a buffer,
+      -- e.g. "faster.nvim active for big_log.txt (5.3 MiB)". Works with
+      -- any notify plugin (nvim-notify, noice, mini.notify, snacks.notifier)
+      -- and falls back to the built-in command-line message if no plugin
+      -- replaces vim.notify. On launch-with-file-arg (e.g. `nvim big.log`),
+      -- the message may still land in the cmdline if your notify plugin
+      -- lazy-loads after BufReadPost. Set to false to silence.
+      notify = true,
+    },
+    -- Long-line behaviour catches files that aren't large in total bytes but
+    -- have very long lines (minified JS/JSON/CSS, single-line log files).
+    -- These choke treesitter and syntax highlighting harder than typical big
+    -- files, but bigfile detection misses them because their byte count is
+    -- low. Detection uses filesize / line_count as a cheap heuristic.
+    longline = {
+      on = true,
+      -- Same shape as bigfile.features_disabled. "all" is also accepted.
+      features_disabled = {
+        'illuminate', 'matchparen', 'lsp',
+        'treesitter', 'indent_blankline',
+        'vimopts', 'syntax', 'filetype',
+      },
+      -- File must be at least this size (MiB) to be considered. Default
+      -- 10 KiB skips tiny files even if their line count is artificially low.
+      filesize = 0.01,
+      -- Trigger when filesize_bytes / line_count > avg_bytes_per_line.
+      avg_bytes_per_line = 250,
+      pattern = "*",
+      -- Same extra_patterns shape as bigfile; both filesize and
+      -- avg_bytes_per_line are overridable per pattern.
+      --[[
+      extra_patterns = {
+        { pattern = "*.js",  avg_bytes_per_line = 200 },
+        { pattern = "*.css", filesize = 0.05 },
+      },
+      ]]
+      extra_patterns = {},
+      -- Same vim.notify behaviour as bigfile (see notify above).
+      notify = true,
     },
     -- Fast macro configuration controls disabling and enabling features when
     -- macro is executed
@@ -246,52 +287,97 @@ test_feature = {
   enable = function() print('this should enable a feature') end,
   -- disable key takes a function that contains code that will disable a feature
   disable = function() print('this should disable a feature') end,
-  -- commands key takes a function that should be used to define commands that
-  -- will enable/disable a feature in runtime
-  commands = function()
-    vim.api.nvim_create_user_command(
-      'FasterEnableTestfeature', print('Test feature enabled'), {})
-    vim.api.nvim_create_user_command(
-      'FasterDisableTestfeature', print('Test feature disabled'), {})
-  end,
 },
+```
+
+The feature is automatically reachable through the unified `:Faster` command
+once registered (see Commands below):
+
+```
+:Faster enable test_feature
+:Faster disable test_feature
 ```
 
 # Commands
 
-Although faster.nvim will disable and enable features based on the rules defined
-in a behaviour it also offers convenience commands that can be used during
-Neovim execution without restarting it.
+faster.nvim exposes a single user command, `:Faster`, with subcommands for
+runtime control. Tab-completion suggests valid actions and targets at every
+position.
 
-Note that disabling and enabling features will work only if the feature has `on`
-set to `true` in the configuration.
+```
+:Faster <action> [target]
+```
 
-| Command                      | Description                                                                                                      |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| FasterDisableAllFeatures     | Disables all defined features that are on                                                                        |
-| FasterDisableBigfile         | Disables bigfile behaviour                                                                                       |
-| FasterDisableFastmacro       | Disables fastmacro behaviour                                                                                     |
-| FasterDisableFiletype        | Disables filetype for the current buffer                                                                         |
-| FasterDisableIlluminate      | Disables illuminate plugin for the current buffer                                                                |
-| FasterDisableIndentblankline | Disables indent blank line plugin globally                                                                       |
-| FasterDisableLsp             | Disables LSP client for currently opened buffers. Will not disable LSP for any new buffers opened.               |
-| FasterDisableLualine         | Disables lualine plugin globally                                                                                 |
-| FasterDisableMiniClue        | Disables mini.clue plugin triggers globally                                                                      |
-| FasterDisableMatchparen      | Disables parentheses matching globally, even for newly opened buffers                                            |
-| FasterDisableSyntax          | Disabled default syntax highlighting for current buffer                                                          |
-| FasterDisableTreesitter      | Disables treesitter for the current buffer                                                                       |
-| FasterDisableVimopts         | Disable neovim options connected to slowness of Neovim when big files are opened but only for the current buffer |
-| FasterEnableAllFeatures      | Enables all defined features that are on                                                                         |
-| FasterEnableBigfile          | Enables bigfile behaviour                                                                                        |
-| FasterEnableFastmacro        | Enables fastmacro behaviour                                                                                      |
-| FasterEnableFiletype         | Enables filetype for the current buffer                                                                          |
-| FasterEnableIlluminate       | Enables illuminate for the current buffer                                                                        |
-| FasterEnableIndentblankline  | Enables indent blank line plugin globally                                                                        |
-| FasterEnableLsp              | Enables LSP client for currently opened buffers                                                                  |
-| FasterEnableLualine          | Enables lualine plugin globally                                                                                  |
-| FasterEnableMiniClue         | Enables mini.clue plugin triggers globally                                                                       |
-| FasterEnableMatchparen       | Enables parentheses matching globally                                                                            |
-| FasterEnableSyntax           | Enables default syntax highlighting for current buffer                                                           |
-| FasterEnableTreesitter       | Enables treesitter for the current buffer                                                                        |
-| FasterEnableVimopts          | Enables neovim options connected to slowness of Neovim whn bif files are opened but only for the current buffer  |
-| FasterPrintConfig            | Prints faster.nvim configuration. Takes into account default configuration and user defined one and merges them. |
+Note that enabling/disabling a feature only takes effect if the feature has
+`on = true` in the configuration.
+
+## Actions
+
+| Action  | Argument                  | What it does                                                                |
+| ------- | ------------------------- | --------------------------------------------------------------------------- |
+| enable  | `<behaviour>` / `<feature>` / `features` / `behaviours` / `all` | Re-enables a behaviour or feature. Group targets (`features`, `behaviours`, `all`) act on every member at once. Group `enable` only re-arms behaviours, it does NOT re-process the current buffer (so just-enabled features stay enabled). |
+| disable | `<behaviour>` / `<feature>` / `features` / `behaviours` / `all` | Disables a behaviour or feature. Group targets disable every member at once. |
+| config  | —                         | Prints the merged faster.nvim configuration (defaults + user overrides)      |
+| status  | —                         | Prints behaviour/feature `on` (config) plus runtime `active` state for the current buffer |
+| help    | —                         | Prints usage and the list of valid targets                                   |
+
+## Targets
+
+**Behaviours:** `bigfile`, `longline`, `fastmacro`
+
+**Features:** `illuminate`, `matchparen`, `lsp`, `treesitter`, `indent_blankline`, `vimopts`, `syntax`, `filetype`, `lualine`, `mini_clue`
+
+**Group targets:**
+- `features` — every feature with `on=true`
+- `behaviours` — every behaviour (init/stop all at once)
+- `all` — every behaviour AND every feature
+
+## Examples
+
+```
+:Faster enable bigfile          " re-arm the bigfile behaviour after disabling it
+:Faster disable bigfile         " stop bigfile from triggering on file open
+:Faster disable features        " disable every feature whose on=true
+:Faster disable behaviours      " stop bigfile + longline + fastmacro
+:Faster disable all             " disable every behaviour AND every feature
+:Faster enable all              " re-arm everything
+:Faster enable treesitter       " re-enable treesitter for the current buffer
+:Faster disable mini_clue       " disable mini.clue triggers globally
+:Faster status                  " quick view of config + runtime state
+:Faster config                  " print the merged config
+```
+
+## `:Faster status`
+
+Two columns:
+
+- `on` — the static config flag (whether faster.nvim is configured to control this).
+- `active` — the runtime state probed against the current buffer:
+  - For **behaviours** (`bigfile`, `longline`): `true` once the behaviour has triggered for this buffer (criteria matched and features were disabled). `fastmacro` reports whether the `@` keymap interception is installed (global, not per-buffer).
+  - For **features**: whether the feature is currently enabled in this buffer, queried via plugin-specific probes (e.g. `vim.treesitter.highlighter.active[bufnr]`, `&syntax`, LSP client count, IBL config).
+  - `?` means the runtime state can't be reliably probed. Currently only `illuminate` — vim-illuminate's public `is_paused()` only reports a global flag, not per-buffer state, so we can't tell whether the active buffer is paused. (`lualine` and `mini_clue` track state through internal flags set by `:Faster enable/disable`, so they report a real true/false.)
+
+Example on a 4 MiB markdown file (bigfile-triggered, longline criteria not met):
+
+```
+faster.nvim status (buffer 1: 3Mfile.md)
+
+  behaviours:               on        active
+    bigfile                   true      true
+    fastmacro                 true      true
+    longline                  true      false
+
+  features:                 on        active
+    filetype                  true      false
+    illuminate                true      ?
+    indent_blankline          true      false
+    lsp                       true      false
+    lualine                   true      true
+    matchparen                true      false
+    mini_clue                 true      true
+    syntax                    true      false
+    treesitter                true      false
+    vimopts                   true      false
+```
+
+`lualine` and `mini_clue` `active=true` here is correct — bigfile's default `features_disabled` doesn't include them (they're in `fastmacro`'s list).
