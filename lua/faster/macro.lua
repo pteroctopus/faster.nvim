@@ -38,33 +38,35 @@ local function restore_after_macro()
   )
 end
 
--- Poll vim.fn.reg_executing() to detect "macro is done" without relying on
--- autocmds. Autocmds are blocked by eventignore='all' (which we want for
--- max macro throughput); libuv timers (used by vim.defer_fn) are not.
+-- Poll vim.fn.reg_executing() to detect "macro done" without relying on
+-- autocmds (autocmds are blocked by eventignore='all'; libuv timers used
+-- by vim.defer_fn are not). We use async feedkeys (mode '') so Vim's main
+-- loop stays responsive — sync feedkeys('x') can hang on recursive macros
+-- that grow the typeahead (e.g. /search<CR>...@q calling itself).
 --
--- Transitions: reg_executing() goes "" -> <reg> -> "" across the lifetime
--- of one macro invocation. We watch for that arc. If the macro completes
--- before the first poll (sub-millisecond macros), we bail after ~100 ms of
--- idle polls so cleanup still runs.
+-- Transitions watched: reg_executing() goes "" -> <reg> -> "" across the
+-- lifetime of one macro invocation.
+local IDLE_POLL_LIMIT = 2 -- ~20 ms before assuming sub-poll macro is done
+local POLL_INTERVAL_MS = 10
+
 local function poll_macro_done()
   if not cleanup_pending then return end
 
   if vim.fn.reg_executing() ~= "" then
-    -- Macro is currently running; reset idle counter.
     macro_seen = true
     idle_polls = 0
-    vim.defer_fn(poll_macro_done, 10)
+    vim.defer_fn(poll_macro_done, POLL_INTERVAL_MS)
   elseif macro_seen then
-    -- We saw it running, now it's done.
     restore_after_macro()
   else
-    -- Macro hasn't started yet (or completed before first poll). Re-check
-    -- after 10 ms; bail out and clean up after ~100 ms of no activity.
+    -- Macro hasn't been observed running yet — either hasn't started or
+    -- completed faster than our polling cadence. After IDLE_POLL_LIMIT
+    -- empty polls, assume it's done and clean up.
     idle_polls = idle_polls + 1
-    if idle_polls >= 10 then
+    if idle_polls >= IDLE_POLL_LIMIT then
       restore_after_macro()
     else
-      vim.defer_fn(poll_macro_done, 10)
+      vim.defer_fn(poll_macro_done, POLL_INTERVAL_MS)
     end
   end
 end
@@ -90,9 +92,8 @@ function M._execute_macro()
   vim.keymap.del('n', '@')
 
   -- Suppress autocommands AND screen redraws during macro execution.
-  -- eventignore = 'all' is fine here because we don't rely on autocmds for
-  -- cleanup detection; the poller uses vim.defer_fn (libuv timer) which is
-  -- not blocked by eventignore.
+  -- eventignore = 'all' blocks autocmds (including SafeState) but does not
+  -- block vim.defer_fn (libuv timer), so the polling cleanup still fires.
   saved_eventignore = vim.o.eventignore
   vim.o.eventignore = 'all'
   saved_lazyredraw = vim.o.lazyredraw
@@ -104,8 +105,8 @@ function M._execute_macro()
 
   vim.fn.feedkeys(count .. '@' .. reg, '')
 
-  -- First poll fires ASAP (next event tick) so short macros' cleanup is
-  -- essentially instant; subsequent polls run at 10 ms cadence.
+  -- First poll on next event tick (essentially 0 ms) so short macros'
+  -- cleanup is near-instant; subsequent polls at POLL_INTERVAL_MS.
   vim.defer_fn(poll_macro_done, 0)
 end
 
@@ -114,7 +115,7 @@ function M.init()
 end
 
 function M.stop()
-  vim.keymap.del('n', '@')
+  pcall(vim.keymap.del, 'n', '@')
 
   cleanup_pending = false
   macro_seen = false
