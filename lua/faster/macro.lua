@@ -38,14 +38,28 @@ local function restore_after_macro()
   )
 end
 
--- Poll vim.fn.reg_executing() to detect "macro is done" without relying on
--- autocmds. Autocmds are blocked by eventignore='all' (which we want for
--- max macro throughput); libuv timers (used by vim.defer_fn) are not.
+-- Primary cleanup trigger: a sentinel command queued behind the macro in the
+-- typeahead (see _execute_macro). Because the macro (including recursive @)
+-- expands at the front of the typeahead, anything fed after it drains only
+-- once the whole macro has finished -> deterministic, zero-latency cleanup.
+-- Guarded by cleanup_pending so it no-ops if the poll backstop got there first.
+function M._cleanup()
+  if not cleanup_pending then return end
+  restore_after_macro()
+end
+
+-- Backstop only. The sentinel handles the normal path instantly; this catches
+-- the one case the sentinel can't: a macro that errors (e.g. a failed search
+-- at EOF) causes Vim to flush the typeahead, taking the sentinel with it. Then
+-- this poll detects reg_executing() == "" and restores state so eventignore
+-- doesn't stay 'all' and freeze the editor.
 --
--- Transitions: reg_executing() goes "" -> <reg> -> "" across the lifetime
--- of one macro invocation. We watch for that arc. If the macro completes
--- before the first poll (sub-millisecond macros), we bail after ~100 ms of
--- idle polls so cleanup still runs.
+-- Autocmds are blocked by eventignore='all' (which we want for max macro
+-- throughput); libuv timers (used by vim.defer_fn) are not, so we poll.
+-- Transitions: reg_executing() goes "" -> <reg> -> "" across the lifetime of
+-- one macro invocation. If the macro completes before the first poll, we bail
+-- after ~100 ms of idle polls. The latency here is irrelevant since this only
+-- runs on the rare error-flush path.
 local function poll_macro_done()
   if not cleanup_pending then return end
 
@@ -90,9 +104,10 @@ function M._execute_macro()
   vim.keymap.del('n', '@')
 
   -- Suppress autocommands AND screen redraws during macro execution.
-  -- eventignore = 'all' is fine here because we don't rely on autocmds for
-  -- cleanup detection; the poller uses vim.defer_fn (libuv timer) which is
-  -- not blocked by eventignore.
+  -- eventignore = 'all' is fine here because cleanup doesn't rely on autocmds:
+  -- the primary trigger is a <Cmd> sentinel in the typeahead (below) and the
+  -- backstop poller uses vim.defer_fn (libuv timer) — neither is blocked by
+  -- eventignore.
   saved_eventignore = vim.o.eventignore
   vim.o.eventignore = 'all'
   saved_lazyredraw = vim.o.lazyredraw
@@ -104,8 +119,17 @@ function M._execute_macro()
 
   vim.fn.feedkeys(count .. '@' .. reg, '')
 
-  -- First poll fires ASAP (next event tick) so short macros' cleanup is
-  -- essentially instant; subsequent polls run at 10 ms cadence.
+  -- Queue the cleanup sentinel directly behind the macro in the typeahead.
+  -- It runs the instant the macro drains (recursion included) -> no latency,
+  -- no race with the poll. <Cmd>...<CR> is an ex command, not an autocmd, so
+  -- it still fires under eventignore='all'.
+  vim.fn.feedkeys(
+    vim.keycode('<Cmd>lua require("faster.macro")._cleanup()<CR>'),
+    'n'
+  )
+
+  -- Backstop for the error-flush case only (see poll_macro_done). First poll
+  -- fires next tick; subsequent polls run at 10 ms cadence.
   vim.defer_fn(poll_macro_done, 0)
 end
 
