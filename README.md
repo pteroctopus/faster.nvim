@@ -42,6 +42,10 @@ Macro execution speed:
 
 https://github.com/pteroctopus/faster.nvim/assets/138196695/99e5e890-6001-4d3f-b89c-316b9a24cced
 
+# Requirements
+
+- Neovim 0.10+
+
 # Installation
 
 - lazy.nvim
