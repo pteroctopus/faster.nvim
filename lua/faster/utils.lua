@@ -10,24 +10,6 @@ function M.print_config()
   print(vim.inspect(FasterConfig))
 end
 
--- BEHAVIOURS
-
-function M.enable_fast_macro()
-  FasterConfig.behaviours.fastmacro.init()
-end
-
-function M.disable_fast_macro()
-  FasterConfig.behaviours.fastmacro.stop()
-end
-
-function M.enable_big_file()
-  FasterConfig.behaviours.bigfile.init()
-end
-
-function M.disable_big_file()
-  FasterConfig.behaviours.bigfile.stop()
-end
-
 -- FEATURES
 
 function M.enable_all_features()
