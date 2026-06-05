@@ -158,8 +158,12 @@ end
 
 function M.stop()
   vim.api.nvim_del_augroup_by_name('faster_longline')
-  enable_features(false)
+  -- Restore defer=true features (filetype, syntax, vimopts) BEFORE defer=false
+  -- ones: lsp.enable() bails with a warning when &filetype is still empty, so
+  -- filetype must be back first. Matches bigfile.stop() and the group-enable
+  -- order in commands.lua.
   enable_features(true)
+  enable_features(false)
   -- Clear stale per-buffer "triggered" markers.
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
     pcall(vim.api.nvim_buf_del_var, bufnr, 'faster_longline_triggered')
