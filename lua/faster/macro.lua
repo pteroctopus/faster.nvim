@@ -138,7 +138,9 @@ function M.init()
 end
 
 function M.stop()
-  vim.keymap.del('n', '@')
+  -- pcall to keep stop() idempotent: vim.keymap.del errors if the mapping is
+  -- absent (fastmacro never armed, or already stopped).
+  pcall(vim.keymap.del, 'n', '@')
 
   cleanup_pending = false
   macro_seen = false
