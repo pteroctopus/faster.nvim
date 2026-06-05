@@ -157,7 +157,9 @@ function M.init(opts)
 end
 
 function M.stop()
-  vim.api.nvim_del_augroup_by_name('faster_longline')
+  -- pcall to keep stop() idempotent: nvim_del_augroup_by_name errors if the
+  -- group doesn't exist (behaviour never armed or already stopped).
+  pcall(vim.api.nvim_del_augroup_by_name, 'faster_longline')
   -- Restore defer=true features (filetype, syntax, vimopts) BEFORE defer=false
   -- ones: lsp.enable() bails with a warning when &filetype is still empty, so
   -- filetype must be back first. Matches bigfile.stop() and the group-enable

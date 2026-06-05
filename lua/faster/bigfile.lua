@@ -150,7 +150,10 @@ function M.init(opts)
 end
 
 function M.stop()
-  vim.api.nvim_del_augroup_by_name('faster_bigfile')
+  -- pcall: stop() may be called when the augroup doesn't exist (behaviour was
+  -- never armed, or already stopped). nvim_del_augroup_by_name errors on a
+  -- missing group, so guard to keep stop() idempotent.
+  pcall(vim.api.nvim_del_augroup_by_name, 'faster_bigfile')
   enable_features(true)
   enable_features(false)
   -- Clear stale per-buffer "triggered" markers so :Faster status reports
