@@ -170,33 +170,41 @@ M.indent_blankline = {
 -- Vimopts
 --
 
+-- Backups are keyed by bufnr so multiple buffers don't clobber each other's
+-- saved values. Presence of an entry == "we disabled this buffer". disable()
+-- always runs inside nvim_buf_call(bufnr, ...) and enable() runs in the real
+-- current buffer, so nvim_get_current_buf() identifies the right buffer in
+-- both paths.
 local vimopts_backup = {}
-local vimopts_disabled = false
 
 M.vimopts = {
   on = true,
   defer = false,
   enable = function()
-    if vimopts_disabled == true then
-      vim.opt_local.swapfile = vimopts_backup.swapfile
-      vim.opt_local.foldmethod = vimopts_backup.foldmethod
-      vim.opt_local.undolevels = vimopts_backup.undolevels
-      vim.opt_local.undoreload = vimopts_backup.undoreload
-      vim.opt_local.list = vimopts_backup.list
-      vim.opt_local.spell = vimopts_backup.spell
-      vimopts_disabled = false
+    local bufnr = vim.api.nvim_get_current_buf()
+    local backup = vimopts_backup[bufnr]
+    if backup ~= nil then
+      vim.opt_local.swapfile = backup.swapfile
+      vim.opt_local.foldmethod = backup.foldmethod
+      vim.opt_local.undolevels = backup.undolevels
+      vim.opt_local.undoreload = backup.undoreload
+      vim.opt_local.list = backup.list
+      vim.opt_local.spell = backup.spell
+      vimopts_backup[bufnr] = nil
     end
   end,
 
   disable = function()
-    if vimopts_disabled == false then
-      vimopts_backup.swapfile = vim.opt_local.swapfile
-      vimopts_backup.foldmethod = vim.opt_local.foldmethod
-      vimopts_backup.undolevels = vim.opt_local.undolevels
-      vimopts_backup.undoreload = vim.opt_local.undoreload
-      vimopts_backup.list = vim.opt_local.list
-      vimopts_backup.spell = vim.opt_local.spell
-      vimopts_disabled = true
+    local bufnr = vim.api.nvim_get_current_buf()
+    if vimopts_backup[bufnr] == nil then
+      vimopts_backup[bufnr] = {
+        swapfile = vim.opt_local.swapfile,
+        foldmethod = vim.opt_local.foldmethod,
+        undolevels = vim.opt_local.undolevels,
+        undoreload = vim.opt_local.undoreload,
+        list = vim.opt_local.list,
+        spell = vim.opt_local.spell,
+      }
     end
 
     vim.opt_local.swapfile = false
@@ -219,23 +227,25 @@ M.vimopts = {
 
 -- Syntax
 
+-- Keyed by bufnr; presence == disabled. See vimopts above for why
+-- nvim_get_current_buf() is the correct buffer in both paths.
 local syntax_backup = {}
-local syntax_disabled = false
 
 M.syntax = {
   on = true,
   defer = true,
   enable = function()
-    if syntax_disabled == true then
-      vim.opt_local.syntax = syntax_backup.syntax
-      syntax_disabled = false
+    local bufnr = vim.api.nvim_get_current_buf()
+    if syntax_backup[bufnr] ~= nil then
+      vim.opt_local.syntax = syntax_backup[bufnr]
+      syntax_backup[bufnr] = nil
     end
   end,
 
   disable = function()
-    if syntax_disabled == false then
-      syntax_backup.syntax = vim.opt_local.syntax
-      syntax_disabled = true
+    local bufnr = vim.api.nvim_get_current_buf()
+    if syntax_backup[bufnr] == nil then
+      syntax_backup[bufnr] = vim.opt_local.syntax
     end
     vim.cmd 'syntax clear'
     vim.opt_local.syntax = 'off'
@@ -252,23 +262,25 @@ M.syntax = {
 
 -- Filetype
 
+-- Keyed by bufnr; presence == disabled. See vimopts above for why
+-- nvim_get_current_buf() is the correct buffer in both paths.
 local filetype_backup = {}
-local filetype_disabled = false
 
 M.filetype = {
   on = true,
   defer = true,
   enable = function()
-    if filetype_disabled == true then
-      vim.opt_local.filetype = filetype_backup.filetype
-      filetype_disabled = false
+    local bufnr = vim.api.nvim_get_current_buf()
+    if filetype_backup[bufnr] ~= nil then
+      vim.opt_local.filetype = filetype_backup[bufnr]
+      filetype_backup[bufnr] = nil
     end
   end,
 
   disable = function()
-    if filetype_disabled == false then
-      filetype_backup.filetype = vim.opt_local.filetype
-      filetype_disabled = true
+    local bufnr = vim.api.nvim_get_current_buf()
+    if filetype_backup[bufnr] == nil then
+      filetype_backup[bufnr] = vim.opt_local.filetype
     end
     vim.opt_local.filetype = ""
   end,
