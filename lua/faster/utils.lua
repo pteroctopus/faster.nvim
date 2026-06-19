@@ -43,7 +43,9 @@ function M.run_on_features(feature_names, func, cond_func)
   end
 
   for _, f in pairs(features) do
-    if f.on and (cond_func ~= nil and cond_func(f)) then
+    -- A nil cond_func means "every selected feature". The old contract
+    -- (nil -> match nothing) silently ran no-ops and was an easy footgun.
+    if f.on and (cond_func == nil or cond_func(f)) then
       func(f)
     end
   end
