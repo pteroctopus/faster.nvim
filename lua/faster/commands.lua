@@ -16,13 +16,17 @@ local function notify_action(action, target)
 end
 
 -- Behaviours (bigfile, fastmacro, ...): toggle runtime + config flag.
-for name, b in pairs(FasterConfig.behaviours) do
+-- Resolve the behaviour via FasterConfig at call time (not the captured `b`)
+-- so the command keeps working if setup() is re-run with new tables.
+for name in pairs(FasterConfig.behaviours) do
   enable[name] = function()
+    local b = FasterConfig.behaviours[name]
     b.on = true
     b.init()
     notify_action("enabled behaviour", name)
   end
   disable[name] = function()
+    local b = FasterConfig.behaviours[name]
     b.stop()
     b.on = false
     notify_action("disabled behaviour", name)
@@ -102,13 +106,16 @@ end
 
 -- Individual features (illuminate, matchparen, lsp, treesitter, ...).
 -- Toggling f.on lets behaviours skip features the user opted out of.
-for name, f in pairs(FasterConfig.features) do
+-- Resolve via FasterConfig at call time (see the behaviours loop above).
+for name in pairs(FasterConfig.features) do
   enable[name] = function()
+    local f = FasterConfig.features[name]
     f.on = true
     f.enable()
     notify_action("enabled feature", name)
   end
   disable[name] = function()
+    local f = FasterConfig.features[name]
     f.disable()
     f.on = false
     notify_action("disabled feature", name)
