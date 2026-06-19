@@ -56,10 +56,13 @@ M.fastmacro = {
   features_disabled = { "lualine", "mini_clue"},
   init = require('faster.macro').init,
   stop = require('faster.macro').stop,
-  -- Active = the @ keymap is bound to our wrapper. init() sets it, stop() unsets.
+  -- Active = the @ keymap is bound to OUR wrapper. init() sets it, stop()
+  -- unsets it. Compare against our own callback rather than "any @ mapping",
+  -- so a user's unrelated @ map isn't misreported as fastmacro being active.
   is_active = function()
     local m = vim.fn.maparg("@", "n", false, true)
-    return type(m) == "table" and (m.callback ~= nil or m.rhs ~= nil and m.rhs ~= "")
+    if type(m) ~= "table" or m.callback == nil then return false end
+    return m.callback == require('faster.macro')._execute_macro
   end,
 }
 
