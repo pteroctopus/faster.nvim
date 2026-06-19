@@ -70,12 +70,18 @@ local function run_disable_pass(name, bufnr, defer)
   end)
 end
 
-local function enable_features(name, defer)
-  utils.run_on_features(
-    FasterConfig.behaviours[name].features_disabled,
-    function(f) f.enable() end,
-    function(f) return f.defer == defer end
-  )
+-- Run enable for features at one defer level inside the bufnr's context, so
+-- buffer-scoped features (treesitter, lsp, vimopts/syntax/filetype, ...) target
+-- the right buffer. Global toggles (matchparen, indent_blankline) re-enable
+-- idempotently if this runs for several buffers.
+local function enable_pass(name, bufnr, defer)
+  vim.api.nvim_buf_call(bufnr, function()
+    utils.run_on_features(
+      FasterConfig.behaviours[name].features_disabled,
+      function(f) f.enable() end,
+      function(f) return f.defer == defer end
+    )
+  end)
 end
 
 -- Three-pass disable for one buffer. defer=true side-effects (setting
@@ -164,14 +170,20 @@ function M.stop(spec)
   -- never armed, or already stopped). nvim_del_augroup_by_name errors on a
   -- missing group, so guard to keep stop() idempotent.
   pcall(vim.api.nvim_del_augroup_by_name, spec.augroup)
-  -- Restore defer=true features (filetype, syntax, vimopts) BEFORE defer=false
-  -- ones: lsp.enable() bails with a warning when &filetype is still empty, so
-  -- filetype must be back first.
-  enable_features(spec.name, true)
-  enable_features(spec.name, false)
-  -- Clear stale per-buffer "triggered" markers so :Faster status reports
-  -- runtime state honestly.
+  -- Restore EVERY buffer this behaviour disabled, each in its own context. The
+  -- disable path is per-buffer (nvim_buf_call + per-bufnr option backups), so
+  -- the restore must be too: a plain current-buffer restore would leave any
+  -- other triggered buffer stuck with features off. Within each buffer, restore
+  -- defer=true (filetype/syntax/vimopts) before defer=false (lsp): lsp.enable()
+  -- bails when &filetype is still empty, so filetype must come back first.
+  -- The triggered marker is the source of truth for what we disabled; clear it
+  -- as we go so :Faster status reports runtime state honestly.
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    local ok, triggered = pcall(vim.api.nvim_buf_get_var, bufnr, spec.triggered_var)
+    if ok and triggered == true and vim.api.nvim_buf_is_valid(bufnr) then
+      enable_pass(spec.name, bufnr, true)
+      enable_pass(spec.name, bufnr, false)
+    end
     pcall(vim.api.nvim_buf_del_var, bufnr, spec.triggered_var)
   end
 end
